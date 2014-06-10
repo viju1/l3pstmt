@@ -1,0 +1,247 @@
+Dim fs As Object
+Dim d As Object
+Dim s1, s2 As String
+Dim t As Integer
+
+
+Private Sub Command1_Click()
+Form1.Enabled = False
+Dim i As Integer
+Dim flag As Boolean
+Set fs = CreateObject("scripting.filesystemobject")
+Open "D:\projectdata.txt" For Output As #1
+'For drv = 0 To Drive1.ListCount - 1 Step 1
+'Set d = fs.getDrive(fs.getdrivename(Drive1.List(drv)))
+'If d.drivetype = 2 Then
+
+'Dir1.Path = UCase(d)
+Dir1.Path = "D:"
+While Dir1.List(0) <> ""
+Dir1.Path = Dir1.List(0)
+Wend
+Text1.Text = Dir1.Path
+While Text1.Text <> "" And flag = False
+            Text3.Text = Text1.Text
+            Call reduce
+            Call findnext
+                If Text4.Text <> "" Then
+                Call findtail
+                End If
+                Text1.Text = Dir1.Path
+  '              Text1.Text = Dir1.Path
+    If Text1.Text = "D:\" Then                   'exit point
+    Call process_files
+    Text1.Text = ""
+    End If
+
+Call process_files
+
+'i = MsgBox("Hello", vbYesNo)
+'If i = 6 Then
+'flag = True
+'End If
+Wend
+
+MsgBox "Scanning completed Click on Start listing Duplicates"
+'End If
+'Next
+Close #1
+Form1.Enabled = True
+End Sub
+
+Private Sub reduce()
+Dim l As Integer
+Dim s As String
+'MsgBox "content=" & Text1.Text
+            l = Len(Text1.Text)
+            s = "a"
+            While s <> "\" And l > 2
+            s = Mid(Text1.Text, l, 1)
+            l = l - 1
+            Wend
+            Text1.Text = Left(Text1.Text, l)
+End Sub
+
+Private Sub findnext()
+Dim l As Integer
+Dim j As Integer
+Set fs = CreateObject("scripting.filesystemobject")
+
+For j = 0 To Drive1.ListCount - 1 Step 1
+Set d = fs.getDrive(fs.getdrivename(Drive1.List(j)))
+If d.drivetype = 2 And d <> Drive1.List(drv) Then
+Dir1.Path = UCase(d)
+End If
+Next
+                                '''''''''''
+Dir1.Path = Text1.Text
+'MsgBox "d=" & Text1.Text
+'MsgBox "path=" & Dir1.Path
+                For l = 0 To Dir1.ListCount - 1 Step 1
+                If Dir1.List(l) = Text3.Text Then
+                Exit For
+                End If
+                Next
+Text4.Text = Dir1.List(l + 1)
+'If Text4.Text = "" Then
+'Call reduce
+'End If
+End Sub
+
+
+Private Sub findtail()
+    Dir1.Path = Text4.Text
+    While Dir1.List(0) <> ""
+    Dir1.Path = Dir1.List(0)
+    Wend
+End Sub
+
+
+Private Sub Command2_Click()
+Dim i As Integer
+Dim flag As Boolean
+Dim fso As Object
+flag = False
+Form1.Enabled = False
+Set fso = CreateObject("Scripting.FileSystemObject")
+fso.copyfile "D:\projectdata.txt", "D:\temp.txt"
+Open "D:\projectdata.txt" For Input As #1
+Do Until EOF(1)
+    Line Input #1, s1
+    Call check
+Loop
+Close #1
+MsgBox "Completed Listing Select file from Above list to delete"
+Form1.Enabled = True
+End Sub
+
+Private Sub Drive1_Change()
+Set fs = CreateObject("scripting.filesystemobject")
+Set d = fs.getDrive(fs.getdrivename(Drive1.Drive))
+MsgBox "drivetype=" & d.drivetype
+End Sub
+
+Private Sub process_files()
+Dim s As String
+Dim i As String
+        File1.Path = Text1.Text         'files procesing
+        i = 0
+            While i < File1.ListCount
+            On Error GoTo L1
+                If Text1.Text <> "" Then
+                    If Text1.Text <> "D:\" Then
+                        Print #1, Text1.Text + "\" + File1.List(i)
+                    Else
+                        Print #1, Text1.Text + File1.List(i)
+                    End If
+                End If
+L1:         i = i + 1
+            Wend
+End Sub
+
+
+Private Sub check()
+Dim ext1, ext2 As String
+                Open "D:\temp.txt" For Input As #2
+                    Do Until EOF(2)
+                    Line Input #2, s2
+                        If s1 <> s2 And FileLen(s1) = FileLen(s2) And retext(s1) = retext(s2) Then
+                            If com(s1, s2) = True Then
+                                If member(s1) = False Then
+                                List1.AddItem (s1)
+                                End If
+                                If member(s2) = False Then
+                                List1.AddItem (s2)
+                                End If
+                                List1.Refresh
+         '                       MsgBox "List updated"
+                            End If
+                        End If
+                    Loop
+                Close #2
+End Sub
+
+Function retext(ByVal arg As String) As String
+Dim ln As Integer
+Dim ch, rete As String
+ln = Len(arg)
+ch = "a"
+rete = ""
+While ch <> "." And ln > 1
+ch = Mid(arg, ln, 1)
+rete = rete + ch
+ln = ln - 1
+Wend
+retext = rete
+End Function
+
+Function com(ByVal f1 As String, ByVal f2 As String) As Boolean
+Dim a As Byte
+Dim b As Byte
+Dim flag As Boolean
+Dim i As Long
+
+'MsgBox "in comp"
+On Error GoTo chkpnt
+Open f1 For Binary As #3
+Open f2 For Binary As #4
+i = 1
+flag = True
+'Do Until EOF(3)
+While i < 512
+Get #3, i, a
+Get #4, i, b
+i = i + 1
+    If a <> b Then
+    flag = False
+    End If
+'Loop
+Wend
+
+Close #3
+Close #4
+
+    If flag = True Then
+    com = True
+    Else
+    com = False
+    End If
+    GoTo far
+chkpnt:
+MsgBox "Error=" + Err.Description
+far:
+End Function
+
+Function member(ByVal arg As String) As Boolean
+Dim i As Integer
+Dim flag As Boolean
+flag = False
+For i = 0 To List1.ListCount - 1 Step 1
+If arg = List1.List(i) Then
+flag = True
+End If
+Next
+If flag = True Then
+member = True
+Else
+member = False
+End If
+End Function
+
+Private Sub Form_Load()
+
+End Sub
+
+Private Sub List1_Click()
+Dim FileSystemObject, FileObject As Object
+On Error GoTo Fileerr
+Set FileSystemObject = CreateObject("Scripting.FileSystemObject")
+Set FileObject = FileSystemObject.GetFile(List1.List(List1.ListIndex))
+FileObject.Delete
+MsgBox "File Deleted " & List1.List(List1.ListIndex)
+List1.List(List1.ListIndex) = ""
+GoTo ha
+Fileerr:
+MsgBox "Error" & Err.Description
+ha:
+End Sub
