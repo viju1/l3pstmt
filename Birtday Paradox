@@ -1,0 +1,106 @@
+Birthday Paradox Cpp File
+
+#include <iostream.h>
+#include <stdlib.h>
+#include<conio.h>
+
+void Introtext();
+int Number_of_Matches (int Group_Size, int Number_of_times);
+void Fill_with_birthdays (int Birthday[], int Group_Size);
+void Put_in_order (int Birthday[], int Group_Size);
+int Is_match (int Birthday[],int Group_Size);
+
+void main()
+{
+	int Group_Size = 1, Number_of_times;
+	float Matches= 1.00;
+	srand(time(NULL));
+	clrscr();
+	Introtext();
+	cout<<"\n\n\nEnter the number of people in a group => ";
+	cin>>Group_Size;
+	while (Group_Size != 0 && Group_Size < 1000 && Group_Size >0)
+	{
+		 cout<<"\nEnter the number of groups to check => ";
+		 cin>>Number_of_times;
+		 cout<<"\nGenerating"<< Number_of_times<<"sets of "<<Group_Size<<" birthdays and checking for matches...\n";
+		Matches = Number_of_Matches( Group_Size, Number_of_times);
+		cout<< "\nResults : "<<Matches<<" out of "<<Number_of_times<<" ("<< (Matches/Number_of_times)*100;
+		cout<< "%) of the groups contained matching birthdays.\n";
+		cout<< "\nEnter the number of people in a group => ";
+		cin>>Group_Size;
+	 }
+		cout <<"\n\nexiting..";
+	 getch();
+}
+inline void Swap(int &a, int &b)
+{
+	int temp=a;
+	a=b;
+	b=temp;
+}
+void Introtext()
+{
+cout << "\nBirthday paradox.\n"
+	 << "\nIf 23 persons are chosen at random, then the chances are more than 50%\n"
+	 << "that at least 2 will have the same birthday!\n"
+	 << "\nThis program will alow you to enter the number of poeple you want to check\n"
+	 << "and the number of times to check for matches.\n"
+	 << "\nEnter a 0 or a number greater than 1000 to exit.\n";
+}
+
+int Number_of_Matches (int Group_Size, int Number_of_times)
+{
+	const int GROUP=1001;
+	int Birthday[GROUP];       //makes array with size the same as the number we want
+	int k=0,Matches=0;
+
+ while (k<=Number_of_times-1)    //will exit after k = the numer of sets
+	  {
+	  Fill_with_birthdays(Birthday,Group_Size);  //will fill array with random bdays
+	  Put_in_order(Birthday,Group_Size);         //sorts
+	  if(Is_match(Birthday,Group_Size))      //tests if matches
+		 {
+			 ++Matches;            //adds to number of mathces found
+		 }
+		++k;
+	  }
+ return Matches;
+}
+void Fill_with_birthdays(int Birthday[],int Group_Size)
+{
+	int k=0;
+	while (k <= Group_Size-1)
+	 {
+		 Birthday[k]=1+rand()%365;   //random number between 1 and 365
+		 ++k;
+	 }
+}
+void Put_in_order(int Birthday[],int Group_Size)
+{
+	int s,start,i;
+	for (start=0;start<Group_Size-1;++start)
+   {
+   s=start;
+   for(i=start+1;i<Group_Size;i++)
+	  if (Birthday[i] < Birthday[s])
+		 s=i;
+   Swap(Birthday[s], Birthday[start]);
+   }
+}
+int Is_match(int Birthday[],int Group_Size)
+{
+	int k=0 ;
+	while(k<Group_Size-1)
+	 {
+	 if (Birthday[k]==Birthday[k+1])
+		return 1;    //yes match
+	 ++k;
+	 }
+ return 0;   //no match
+}
+
+
+
+
+
